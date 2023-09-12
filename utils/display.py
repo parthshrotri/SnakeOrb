@@ -16,10 +16,11 @@ def kep_elem(name, kep, sigfigs=6):
     print(f"True Anomaly (f): {np.degrees(kep[5]):.{sigfigs}}º\n")
 
 def show_central_body(fig, central_body):
-    u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
-    x = central_body.radius*np.cos(u)*np.sin(v)
-    y = central_body.radius*np.sin(u)*np.sin(v)
-    z = central_body.radius*np.cos(v)
+    theta = np.linspace(0, 2.*np.pi, 100)
+    phi = np.linspace(0, np.pi, 100)
+    x = central_body.radius * np.outer(np.cos(theta), np.sin(phi))
+    y = central_body.radius * np.outer(np.sin(theta), np.sin(phi))
+    z = central_body.radius * np.outer(np.ones(np.size(theta)), np.cos(phi))
     fig.add_trace(go.Surface(x=x, y=y, z=z, opacity=0.1, colorscale= central_body.colors, showscale=False))
 
 def BCI(t_array, trajs, names, colorscales, central_body):
@@ -68,6 +69,7 @@ def ground_track(t_array, trajs, names, colorscales, central_body):
         coastline = np.loadtxt("GroundMaps/Earth.txt")
     else:
         print("Ground Track Not Supported")
+        return
     fig.add_trace(go.Scatter(x=coastline[:,0], y=coastline[:,1], mode="lines", line=dict(color='rgb(52, 165, 111)'), name=""))
     for i in range(len(trajs)):
         fig.add_trace(go.Scatter(x=trajs[i]["state_lon"], y=trajs[i]["state_lat"], mode="markers", 

@@ -23,7 +23,7 @@ def ecef2ll(ecefState):
         Lon = Lon + 2*np.pi
 
     Lat = np.arcsin(ecefState[2]/np.linalg.norm(ecefState))
-    return np.array([np.degrees(Lat), np.degrees(Lon)])
+    return np.array([np.degrees(Lat), np.degrees(Lon), np.linalg.norm(ecefState[0:2])])
 
 # Quaternion defined as: q1 = real, q2 = i, q3 = j, q4 = k
 def init_quat(eciState, attitude):
