@@ -70,15 +70,15 @@ def angular_acceleration(sat, omega, dt):
 
 def orbit_prop(sat, dt, central_body):
     mu = central_body.mu
-    state = int.odeint(orbit_ode, sat.state, [0,dt], args = (sat, mu),rtol=1e-13, atol=1e-13)
+    state = int.odeint(orbit_ode, sat.state, [0,dt], args = (sat, central_body),rtol=1e-13, atol=1e-13)
     qEci2Body = int.odeint(qprop, sat.qEci2Body, [0,dt], args = (sat, ), rtol=1e-13, atol=1e-13)
     # qEci2Body = init_quat(state[1], "ram")
     return state[1], qEci2Body[1]
     # return state[1], qEci2Body
 
-def orbit_ode(state, t, sat, mu):
-    grav_param = mu # m^3/s^2
-    J2 = 1.75553*(10**10)*(1000**5) # m^5/s^2
+def orbit_ode(state, t, sat, central_body):
+    grav_param = central_body.mu # m^3/s^2
+    J2 = central_body.J2 # m^3/s^2
     r = np.sqrt(state[0]**2 + state[1]**2 + state[2]**2)
     drag = get_drag_accel(sat)
     ax = -grav_param*state[0]/r**3 + J2*state[0]/r**7 * (6*state[2]**2 - 3/2*(state[0]**2 + state[1]**2)) - drag[0]

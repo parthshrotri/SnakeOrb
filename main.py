@@ -93,8 +93,8 @@ trajs = [sat1_traj, sat2_traj, sat3_traj, sat4_traj]
 colorscales = ['Purp', 'Reds', 'Magenta', 'Blues']
 names = [sat1.get_name(), sat2.get_name(), sat3.get_name(), sat4.get_name()]
 
-disp.ECI(t_array, trajs, names, colorscales, central_body=main_body)
-disp.ECEF(t_array, trajs, names, colorscales, central_body=main_body)
+disp.BCI(t_array, trajs, names, colorscales, central_body=main_body)
+disp.BCBF(t_array, trajs, names, colorscales, central_body=main_body)
 disp.ground_track(t_array, trajs, names, colorscales, central_body=main_body)
 
 disp.state_vec(sat1.get_name(), sat1.get_state())

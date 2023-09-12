@@ -22,7 +22,7 @@ def show_central_body(fig, central_body):
     z = central_body.radius*np.cos(v)
     fig.add_trace(go.Surface(x=x, y=y, z=z, opacity=0.1, colorscale= central_body.colors, showscale=False))
 
-def ECI(t_array, trajs, names, colorscales, central_body):
+def BCI(t_array, trajs, names, colorscales, central_body):
     fig = go.Figure();  
     show_central_body(fig, central_body)
     for i in range(len(trajs)):
@@ -42,7 +42,7 @@ def ECI(t_array, trajs, names, colorscales, central_body):
     )
     fig.show()
 
-def ECEF(t_array, trajs, names, colorscales, central_body):
+def BCBF(t_array, trajs, names, colorscales, central_body):
     fig = go.Figure();  
     show_central_body(fig, central_body)
     for i in range(len(trajs)):
