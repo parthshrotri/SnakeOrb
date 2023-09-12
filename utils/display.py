@@ -65,7 +65,7 @@ def ECEF(t_array, trajs, names, colorscales, central_body):
 def ground_track(t_array, trajs, names, colorscales, central_body):
     fig = go.Figure();  
     if central_body.name == "Earth":
-        coastline = np.loadtxt("GroundMaps/coastline.txt")
+        coastline = np.loadtxt("GroundMaps/Earth.txt")
     else:
         print("Ground Track Not Supported")
     fig.add_trace(go.Scatter(x=coastline[:,0], y=coastline[:,1], mode="lines", line=dict(color='rgb(52, 165, 111)'), name=""))
