@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import plotly.graph_objects as go
 
 def state_vec(name, state, sigfigs=6):
@@ -44,6 +45,9 @@ def BCI(t_array, trajs, names, colorscales, central_body):
     fig.show()
 
 def BCBF(t_array, trajs, names, colorscales, central_body):
+    if central_body.name != "Earth":
+        print(f"{central_body.name} Centered {central_body.name} Fixed Trajectories not supported yet")
+        return
     fig = go.Figure();  
     show_central_body(fig, central_body)
     for i in range(len(trajs)):
@@ -64,12 +68,13 @@ def BCBF(t_array, trajs, names, colorscales, central_body):
     fig.show()
 
 def ground_track(t_array, trajs, names, colorscales, central_body):
-    fig = go.Figure();  
     if central_body.name == "Earth":
+        print(os.getcwd())
         coastline = np.loadtxt("GroundMaps/Earth.txt")
     else:
-        print("Ground Track Not Supported")
+        print("Ground Track Not Supported for {central_body.name}}")
         return
+    fig = go.Figure();  
     fig.add_trace(go.Scatter(x=coastline[:,0], y=coastline[:,1], mode="lines", line=dict(color='rgb(52, 165, 111)'), name=""))
     for i in range(len(trajs)):
         fig.add_trace(go.Scatter(x=trajs[i]["state_lon"], y=trajs[i]["state_lat"], mode="markers", 
