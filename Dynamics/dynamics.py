@@ -27,7 +27,7 @@ def ecef2ll(ecefState):
 
 # Quaternion defined as: q1 = real, q2 = i, q3 = j, q4 = k
 def init_quat(eciState, attitude):
-    if attitude == "ram":
+    if attitude == "lvlh":
         vel = eciState[3:6]
         imag = np.cross(vel, np.array([1,0,0]))
         real = np.linalg.norm(vel) + np.dot(vel, np.array([1,0,0]))
@@ -60,7 +60,8 @@ def get_drag_accel(sat):
 def qprop(q, dt, sat):
     q = qnorm(q)
     omega = int.odeint(angular_acceleration, sat.omega, [0,dt], args = (sat, ), rtol=1e-13, atol=1e-13)[1]
-    omega = omega / np.linalg.norm(omega)
+    if(np.linalg.norm(omega) != 0):
+        omega = omega / np.linalg.norm(omega)
     qdot = 1/2 * np.array([0, omega[0], omega[1], omega[2]]) * q
     q = q + qdot*dt
     return qnorm(q)
@@ -76,12 +77,23 @@ def orbit_prop(sat, dt, central_body):
     return state[1], qEci2Body[1]
     # return state[1], qEci2Body
 
-def orbit_ode(state, t, sat, central_body):
-    grav_param = central_body.mu # m^3/s^2
+def J2_accel(state, central_body):
     J2 = central_body.J2 # m^3/s^2
     r = np.sqrt(state[0]**2 + state[1]**2 + state[2]**2)
-    drag = get_drag_accel(sat)
-    ax = -grav_param*state[0]/r**3 + J2*state[0]/r**7 * (6*state[2]**2 - 3/2*(state[0]**2 + state[1]**2)) - drag[0]
-    ay = -grav_param*state[1]/r**3 + J2*state[1]/r**7 * (6*state[2]**2 - 3/2*(state[0]**2 + state[1]**2)) - drag[1]
-    az = -grav_param*state[2]/r**3 + J2*state[2]/r**7 * (3*state[2]**2 - 9/2*(state[0]**2 + state[1]**2)) - drag[2]
+    Jx = J2*state[0]/r**7 * (6*state[2]**2 - 3/2*(state[0]**2 + state[1]**2))
+    Jy = J2*state[1]/r**7 * (6*state[2]**2 - 3/2*(state[0]**2 + state[1]**2))
+    Jz = J2*state[2]/r**7 * (3*state[2]**2 - 9/2*(state[0]**2 + state[1]**2))
+    return np.array([Jx, Jy, Jz])
+
+def orbit_ode(state, t, sat, central_body):
+    grav_param = central_body.mu # m^3/s^2
+    J2_effect = J2_accel(state, central_body)
+    r = np.sqrt(state[0]**2 + state[1]**2 + state[2]**2)
+    if central_body.name == "Earth":
+        drag = get_drag_accel(sat)
+    else:
+        drag = np.array([0,0,0])
+    ax = -grav_param*state[0]/r**3 + J2_effect[0] - drag[0]
+    ay = -grav_param*state[1]/r**3 + J2_effect[1] - drag[1]
+    az = -grav_param*state[2]/r**3 + J2_effect[2] - drag[2]
     return np.array([state[3], state[4], state[5], ax, ay, az])

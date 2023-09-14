@@ -2,6 +2,6 @@ SnakeOrb is a Python based Orbital Mechanics Simulator, a simulator that can tak
 
 I hope to add attitude perturbations due to the atmosphere, SRP, and gravity gradient in the future.
 
-In order to run these programs, I recommend installing **Anaconda**. Run the command: `conda env create -f SnakeOrb.yaml` in your command line to create a custom conda environment and install the required packages.
+In order to run these programs, I recommend installing **Anaconda**. Run the command: `conda env create -f conda.yaml` in your command line to create a custom conda environment named `SnakeOrb` and install the required packages.
 
 This simulation is currently in development. To run this simulation, If you'd like to contribute, please contact me at [shrotri3@illinois.edu](mailto:shrotri3@illinois.edu).

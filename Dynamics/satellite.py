@@ -65,4 +65,7 @@ class Satellite:
 
     def get_name(self):
         return self.name
+    
+    def get_history(self):
+        return self.history
         

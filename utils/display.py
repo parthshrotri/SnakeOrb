@@ -28,7 +28,7 @@ def BCI(t_array, trajs, names, colorscales, central_body):
     fig = go.Figure();  
     show_central_body(fig, central_body)
     for i in range(len(trajs)):
-        fig.add_trace(go.Scatter3d(x=trajs[i]["state_x_eci"], y=trajs[i]["state_y_eci"], z=trajs[i]["state_z_eci"], mode="lines",
+        fig.add_trace(go.Scatter3d(x=trajs[names[i]]["state_x_eci"], y=trajs[names[i]]["state_y_eci"], z=trajs[names[i]]["state_z_eci"], mode="lines",
                                    line=dict(color=t_array, colorscale=colorscales[i]), name=names[i]))
     fig.update_layout(
         title="ECI Trajectory",
@@ -44,14 +44,14 @@ def BCI(t_array, trajs, names, colorscales, central_body):
     )
     fig.show()
 
-def BCBF(t_array, trajs, names, colorscales, central_body):
+def ECEF(t_array, trajs, names, colorscales, central_body):
     if central_body.name != "Earth":
         print(f"{central_body.name} Centered {central_body.name} Fixed Trajectories not supported yet")
         return
     fig = go.Figure();  
     show_central_body(fig, central_body)
     for i in range(len(trajs)):
-        fig.add_trace(go.Scatter3d(x=trajs[i]["state_x_ecef"], y=trajs[i]["state_y_ecef"], z=trajs[i]["state_z_ecef"], mode="lines",
+        fig.add_trace(go.Scatter3d(x=trajs[names[i]]["state_x_ecef"], y=trajs[names[i]]["state_y_ecef"], z=trajs[names[i]]["state_z_ecef"], mode="lines",
                                    line=dict(color=t_array, colorscale=colorscales[i]), name=names[i]))
     fig.update_layout(
         title="ECEF Trajectory",
@@ -69,7 +69,6 @@ def BCBF(t_array, trajs, names, colorscales, central_body):
 
 def ground_track(t_array, trajs, names, colorscales, central_body):
     if central_body.name == "Earth":
-        print(os.getcwd())
         coastline = np.loadtxt("GroundMaps/Earth.txt")
     else:
         print("Ground Track Not Supported for {central_body.name}}")
@@ -77,7 +76,7 @@ def ground_track(t_array, trajs, names, colorscales, central_body):
     fig = go.Figure();  
     fig.add_trace(go.Scatter(x=coastline[:,0], y=coastline[:,1], mode="lines", line=dict(color='rgb(52, 165, 111)'), name=""))
     for i in range(len(trajs)):
-        fig.add_trace(go.Scatter(x=trajs[i]["state_lon"], y=trajs[i]["state_lat"], mode="markers", 
+        fig.add_trace(go.Scatter(x=trajs[names[i]]["state_lon"], y=trajs[names[i]]["state_lat"], mode="markers", 
                                  marker=dict(size=4, color=t_array, colorscale=colorscales[i], opacity=1), name=names[i]))
     fig.update_layout(
     title="Ground Track",

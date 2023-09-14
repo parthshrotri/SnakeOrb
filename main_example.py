@@ -1,18 +1,16 @@
 import numpy as np
-import pandas as pd
 
+import Core.simulator as sim
 import Dynamics.dynamics as dyn
 import Dynamics.body as body
 import Dynamics.satellite as satellite
 import utils.OEConvert as OEConvert
 import utils.display as disp
 
-from tqdm import tqdm
-
 main_body = body.central_body("Earth")
 
-time_since_j2000 = 2460170.5*24*60*60 # s
-tf = time_since_j2000 + 24*60*60 # s
+start_time = 2460170.5*24*60*60 # s
+end_time = start_time + 24*60*60 # s
 dt = 60 # s
 
 # Hubble
@@ -35,7 +33,7 @@ sat4_eciStateInit = 1000 * np.array([1.721649642391115E+04, -3.849194159448530E+
 sat1_area = [5.6, 3.5, 3.0]
 sat1_mass = 4725 # kg
 
-sat1_qEci2Body = dyn.init_quat(sat1_eciStateInit, "ram")
+sat1_qEci2Body = dyn.init_quat(sat1_eciStateInit, "lvlh")
 sat1_omega = np.array([0, 0, 0])
 sat1_cd = [2.2, 2.2, 2.2]
 
@@ -43,53 +41,17 @@ sat1 = satellite.Satellite("Hubble", sat1_eciStateInit, sat1_qEci2Body, sat1_ome
 sat2 = satellite.Satellite("TDRS-C", sat2_eciStateInit, sat1_qEci2Body, sat1_omega, sat1_cd, sat1_area, sat1_mass)
 sat3 = satellite.Satellite("NAVSTAR 68", sat3_eciStateInit, sat1_qEci2Body, sat1_omega, sat1_cd, sat1_area, sat1_mass)
 sat4 = satellite.Satellite("IntelSat 901", sat4_eciStateInit, sat1_qEci2Body, sat1_omega, sat1_cd, sat1_area, sat1_mass)
-sat1_ecef_state = dyn.eci2ecef(sat1_eciStateInit, time_since_j2000/(60*60*24))
-sat1_ll_state = dyn.ecef2ll(sat1_ecef_state)
-sat1.update_state(0, sat1_eciStateInit, sat1_qEci2Body, sat1_ecef_state, sat1_ll_state)
-sat2_ecef_state = dyn.eci2ecef(sat2_eciStateInit, time_since_j2000/(60*60*24))
-sat2_ll_state = dyn.ecef2ll(sat2_ecef_state)
-sat2.update_state(0, sat2_eciStateInit, sat1_qEci2Body, sat2_ecef_state, sat2_ll_state)
-sat3_ecef_state = dyn.eci2ecef(sat3_eciStateInit, time_since_j2000/(60*60*24))
-sat3_ll_state = dyn.ecef2ll(sat3_ecef_state)
-sat3.update_state(0, sat3_eciStateInit, sat1_qEci2Body, sat3_ecef_state, sat3_ll_state)
-sat4_ecef_state = dyn.eci2ecef(sat4_eciStateInit, time_since_j2000/(60*60*24))
-sat4_ll_state = dyn.ecef2ll(sat4_ecef_state)
-sat4.update_state(0, sat4_eciStateInit, sat1_qEci2Body, sat4_ecef_state, sat4_ll_state)
 
-t_array = np.arange(time_since_j2000, tf, dt)
+t_array = np.arange(start_time, end_time, dt)
+SnakeOrb = sim.Simulator(main_body, t_array, [sat1, sat2, sat3, sat4])
 
-for t in tqdm(t_array):
-    time_since_j2000 += dt
-    new_state, new_qEci2Body = dyn.orbit_prop(sat1, dt, main_body)
-    ecef_state = dyn.eci2ecef(new_state, time_since_j2000/(60*60*24))
-    ll_state = dyn.ecef2ll(ecef_state)
-    sat1.update_state(t, new_state, new_qEci2Body, ecef_state, ll_state)
+trajs = SnakeOrb.run()
 
-    new_state, new_qEci2Body = dyn.orbit_prop(sat2, dt, main_body)
-    ecef_state = dyn.eci2ecef(new_state, time_since_j2000/(60*60*24))
-    ll_state = dyn.ecef2ll(ecef_state)
-    sat2.update_state(t, new_state, new_qEci2Body, ecef_state, ll_state)
-
-    new_state, new_qEci2Body = dyn.orbit_prop(sat3, dt, main_body)
-    ecef_state = dyn.eci2ecef(new_state, time_since_j2000/(60*60*24))
-    ll_state = dyn.ecef2ll(ecef_state)
-    sat3.update_state(t, new_state, new_qEci2Body, ecef_state, ll_state)
-
-    new_state, new_qEci2Body = dyn.orbit_prop(sat4, dt, main_body)
-    ecef_state = dyn.eci2ecef(new_state, time_since_j2000/(60*60*24))
-    ll_state = dyn.ecef2ll(ecef_state)
-    sat4.update_state(t, new_state, new_qEci2Body, ecef_state, ll_state)
-sat1_traj = pd.DataFrame(sat1.history)
-sat2_traj = pd.DataFrame(sat2.history)
-sat3_traj = pd.DataFrame(sat3.history)
-sat4_traj = pd.DataFrame(sat4.history)
-
-trajs = [sat1_traj, sat2_traj, sat3_traj, sat4_traj]
 colorscales = ['Purp', 'Reds', 'Magenta', 'Blues']
 names = [sat1.get_name(), sat2.get_name(), sat3.get_name(), sat4.get_name()]
 
 disp.BCI(t_array, trajs, names, colorscales, central_body=main_body)
-disp.BCBF(t_array, trajs, names, colorscales, central_body=main_body)
+disp.ECEF(t_array, trajs, names, colorscales, central_body=main_body)
 disp.ground_track(t_array, trajs, names, colorscales, central_body=main_body)
 
 disp.state_vec(sat1.get_name(), sat1.get_state())

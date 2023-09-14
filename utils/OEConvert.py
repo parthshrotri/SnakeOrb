@@ -10,9 +10,13 @@ def state_vec_to_keplerian(state, mu):
     return np.array([a, e, i, raan, omega, v])
 
 def keplerian_to_state_vec(kep, mu):
-    r = r(kep, mu)
-    v = v(kep, mu)
-    return np.array([r[0], r[1], r[2], v[0], v[1], v[2]])
+    kep[2] = np.radians(kep[2])
+    kep[3] = np.radians(kep[3])
+    kep[4] = np.radians(kep[4])
+    kep[5] = np.radians(kep[5])
+    pos = r(kep)
+    vel = v(kep, mu)
+    return np.array([pos[0], pos[1], pos[2], vel[0], vel[1], vel[2]])
 
 def r(kep):
     a = kep[0]
@@ -24,10 +28,10 @@ def r(kep):
     
     r_mag = a*(1-e**2)/(1+e*np.cos(f))
     theta = omega + f
-    r = r_mag*np.array([np.cos(theta)*np.cos(raan)-np.cos(i)*np.sin(theta)*np.sin(raan),
+    pos = r_mag*np.array([np.cos(theta)*np.cos(raan)-np.cos(i)*np.sin(theta)*np.sin(raan),
                   np.cos(theta)*np.sin(raan)+np.cos(i)*np.cos(raan)*np.sin(theta),
                   np.sin(i)*np.sin(theta)])
-    return r
+    return pos
 
 def v(kep, mu):
     a = kep[0]
@@ -37,15 +41,13 @@ def v(kep, mu):
     omega = kep[4]
     f = kep[5]
 
-    r = r(kep, mu)
-
     h_mag = np.sqrt(mu*a*(1-e**2))
     theta = omega + f
-    v = (mu/h_mag)*np.array([-np.cos(raan)*(np.sin(theta) + e*np.sin(omega)) - np.sin(raan)*(np.cos(theta) + e*np.cos(omega))*np.cos(i),
+    vel = (mu/h_mag)*np.array([-np.cos(raan)*(np.sin(theta) + e*np.sin(omega)) - np.sin(raan)*(np.cos(theta) + e*np.cos(omega))*np.cos(i),
                              -np.sin(raan)*(np.sin(theta) + e*np.sin(omega)) - np.cos(raan)*(np.cos(theta) + e*np.cos(omega))*np.cos(i),
                              (np.cos(theta) + e*np.cos(omega))*np.sin(i)])
     
-    return v
+    return vel
 
 def semimajor_axis(state, mu):
     r_mag = np.linalg.norm(state[0:3])
