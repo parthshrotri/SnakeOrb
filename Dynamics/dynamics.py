@@ -32,7 +32,8 @@ def get_drag_accel(sat, central_body):
     dragx = -1/2*sat.cd_x*sat.area_x*rho*sat.state[3]**2 / sat.mass
     dragy = -1/2*sat.cd_y*sat.area_y*rho*sat.state[4]**2 / sat.mass
     dragz = -1/2*sat.cd_z*sat.area_z*rho*sat.state[5]**2 / sat.mass
-    return np.array([dragx, dragy, dragz])
+    drag_vec = np.array([dragx, dragy, dragz])
+    return qov(sat.qEci2Body, drag_vec)
 
 def qprop(q, dt, sat):
     q = qnorm(q)
@@ -70,7 +71,7 @@ def orbit_ode(state, t, sat, central_body):
         drag = get_drag_accel(sat, central_body)
     else:
         drag = np.array([0,0,0])
-    ax = -grav_param*state[0]/r**3 + J2_effect[0] - drag[0]
-    ay = -grav_param*state[1]/r**3 + J2_effect[1] - drag[1]
-    az = -grav_param*state[2]/r**3 + J2_effect[2] - drag[2]
+    ax = -grav_param*state[0]/r**3 + J2_effect[0] + drag[0]
+    ay = -grav_param*state[1]/r**3 + J2_effect[1] + drag[1]
+    az = -grav_param*state[2]/r**3 + J2_effect[2] + drag[2]
     return np.array([state[3], state[4], state[5], ax, ay, az])

@@ -16,7 +16,7 @@ end_time = start_time+duration # s
 dt = 1 # s
 
 # Dragon
-alt = 103*1000 # m
+alt = 130*1000 # m
 sat1_kep = np.array([main_body.radius+alt, 0.0003, 51.6, 0, 0, 0])
 sat1_eciStateInit = OEConvert.keplerian_to_state_vec(sat1_kep, main_body.mu)
 

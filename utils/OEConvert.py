@@ -19,6 +19,8 @@ def keplerian_to_state_vec(kep, mu):
 def semimajor_axis(state, mu):
     r = np.linalg.norm(state[0:3])
     v = np.linalg.norm(state[3:6])
+    if r == 0:
+        return 0
     a = 1/(2/r - v**2/mu)
     return a
 
@@ -27,6 +29,8 @@ def eccentricity(state, mu):
     v = state[3:6]
     r_mag = np.sqrt(np.dot(r, r))
     v_mag = np.sqrt(np.dot(v, v))
+    if r_mag == 0:
+        return 0
     e = (v_mag**2/mu - 1/r_mag)*r - 1/mu*np.dot(r, v)*v
     return e
 
@@ -35,6 +39,8 @@ def inclination(state):
     v = state[3:6]
     h = np.cross(r, v)
     h_mag = np.sqrt(np.dot(h, h))
+    if h_mag == 0:
+        return 0
     incl = np.arccos(np.dot(h/h_mag, np.array([0, 0, 1])))
     return incl
 
@@ -59,6 +65,8 @@ def argument_of_periapse(state, mu):
     node_mag = np.sqrt(np.dot(node, node))
     e = eccentricity(state, mu)
     e_mag = np.sqrt(np.dot(e, e))
+    if node_mag == 0 or e_mag == 0:
+        return 0
     omega = np.arccos(np.dot(node, e)/(node_mag*e_mag))
     if (np.dot(e, np.array([0, 0, 1])) < 0):
         omega = 2*np.pi - omega
@@ -70,6 +78,8 @@ def true_anomaly(state, mu):
     e = eccentricity(state, mu)
     r_mag = np.sqrt(np.dot(r, r))
     e_mag = np.sqrt(np.dot(e, e))
+    if r_mag == 0 or e_mag == 0:
+        return 0
     f = np.arccos(np.dot(e, r)/(e_mag*r_mag))
     if (np.dot(r, v) < 0):
         f = 2*np.pi - f

@@ -23,6 +23,8 @@ def ecef2eci(ecefState, days_since_j2000):
     return eciState
 
 def ecef2lla(ecefState):
+    if np.linalg.norm(ecefState) == 0:
+        return np.array([np.nan, np.nan, np.nan])
     r_delta = np.linalg.norm(ecefState[0:1])
     sinA = ecefState[1]/r_delta
     cosA = ecefState[0]/r_delta
