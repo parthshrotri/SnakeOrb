@@ -1,3 +1,4 @@
+import utils.convert as convert
 class Satellite:
     def __init__(self, name, state, rot_state, omega, cd, area, mass):
         self.name = name
@@ -11,6 +12,7 @@ class Satellite:
         self.area_y = area[1]
         self.area_z = area[2]
         self.mass = mass
+        self.crashed = False
         self.history = {"time":[],
                         "state_x_eci":[],
                         "state_y_eci":[],
@@ -62,10 +64,23 @@ class Satellite:
 
     def get_state(self):
         return self.state
+    
+    def get_ecef_state(self, time):
+        return convert.eci2ecef(self.state, time)
+    
+    def get_qEci2Body(self):
+        return self.qEci2Body
 
     def get_name(self):
         return self.name
     
     def get_history(self):
         return self.history
+    
+    def set_crashed(self):
+        self.crashed = True
+    
+    def is_crashed(self):
+        return self.crashed
+    
         

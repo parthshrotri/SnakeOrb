@@ -1,5 +1,4 @@
 import numpy as np
-import os
 import plotly.graph_objects as go
 
 def state_vec(name, state, sigfigs=6):
@@ -22,7 +21,7 @@ def show_central_body(fig, central_body):
     x = central_body.radius * np.outer(np.cos(theta), np.sin(phi))
     y = central_body.radius * np.outer(np.sin(theta), np.sin(phi))
     z = central_body.radius * np.outer(np.ones(np.size(theta)), np.cos(phi))
-    fig.add_trace(go.Surface(x=x, y=y, z=z, opacity=0.1, colorscale= central_body.colors, showscale=False))
+    fig.add_trace(go.Surface(x=x, y=y, z=z, opacity=0.3, colorscale= central_body.colors, showscale=False))
 
 def BCI(t_array, trajs, names, colorscales, central_body):
     fig = go.Figure();  

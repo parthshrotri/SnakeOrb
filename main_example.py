@@ -6,11 +6,13 @@ import Dynamics.body as body
 import Dynamics.satellite as satellite
 import utils.OEConvert as OEConvert
 import utils.display as disp
+import utils.time as time
 
 main_body = body.central_body("Earth")
 
-start_time = 2460170.5*24*60*60 # s
-end_time = start_time + 24*60*60 # s
+start_time = time.convertDaysToSec(2460170.5) # s
+duration = time.convertToSeconds(years=0, months=0, days=1, hours=0, minutes=0, seconds=0)
+end_time = start_time + duration # s
 dt = 60 # s
 
 # Hubble
@@ -47,7 +49,7 @@ SnakeOrb = sim.Simulator(main_body, t_array, [sat1, sat2, sat3, sat4])
 
 trajs = SnakeOrb.run()
 
-colorscales = ['Purp', 'Reds', 'Magenta', 'Blues']
+colorscales = ['Purp_r', 'Reds_r', 'Magenta_r', 'Blues_r']
 names = [sat1.get_name(), sat2.get_name(), sat3.get_name(), sat4.get_name()]
 
 disp.BCI(t_array, trajs, names, colorscales, central_body=main_body)

@@ -10,29 +10,30 @@ import utils.time as time
 
 main_body = body.central_body("Earth")
 
-start_time = time.convertDaysToSec(0) # s
-duration = time.convertToSeconds(years=0, months=0, days=1, hours=0, minutes=200, seconds=0) # s
-end_time = start_time+duration # ss
-dt = 60 # s
+start_time = time.convertDaysToSec(0)
+duration = time.convertToSeconds(years=0, months=0, days=0, hours=3, minutes=0, seconds=0)
+end_time = start_time+duration # s
+dt = 1 # s
 
-# International Space Station
-alt = 423*1000 # km
-sat1_kep = np.array([main_body.radius+alt, 0.0005466, 51.6410, 0.0, 0.0, 0.0])
+# Dragon
+alt = 103*1000 # m
+sat1_kep = np.array([main_body.radius+alt, 0.0003, 51.6, 0, 0, 0])
 sat1_eciStateInit = OEConvert.keplerian_to_state_vec(sat1_kep, main_body.mu)
-sat1_area = [94, 73, 45]
-sat1_mass = 420000 # kg
+
+sat1_area = [2, 2, 8.1]
+sat1_mass = 9616 # kg
 sat1_qEci2Body = dyn.init_quat(sat1_eciStateInit, "lvlh")
 sat1_omega = np.array([0, 0, 0])
 sat1_cd = [2.2, 2.2, 2.2]
 
-sat1 = satellite.Satellite("International Space Station", sat1_eciStateInit, sat1_qEci2Body, sat1_omega, sat1_cd, sat1_area, sat1_mass)
+sat1 = satellite.Satellite("Dragon", sat1_eciStateInit, sat1_qEci2Body, sat1_omega, sat1_cd, sat1_area, sat1_mass)
 
 t_array = np.arange(start_time, end_time, dt)
 SnakeOrb = sim.Simulator(main_body, t_array, [sat1])
 
 trajs = SnakeOrb.run()
 
-colorscales = ['Purp_r']
+colorscales = ['Purp']
 names = [sat1.get_name()]
 
 disp.BCI(t_array, trajs, names, colorscales, central_body=main_body)
