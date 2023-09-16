@@ -8,3 +8,6 @@ def convertSecToDays(seconds):
 
 def convertDaysToSec(days):
     return days*24*60*60
+
+def convertCalendarToJ2000(years, months, days, hours, minutes, seconds, milliseconds=0, timezone=0):
+    return convertToSeconds(years, months, days, hours, minutes, seconds, milliseconds) - convertToSeconds(2000, 1, 1, 12, 0, 0, 0) + timezone*60*60
