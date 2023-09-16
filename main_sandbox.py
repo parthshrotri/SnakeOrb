@@ -10,7 +10,7 @@ import utils.time as time
 
 main_body = body.central_body("Earth")
 
-start_time = time.convertCalendarToJ2000(2002, 7, 16, 0, 1, 0, 0, -8)
+start_time = time.convertCalendarToJ2000(2002, 7, 16, 0, 1, 0, 0, -7)
 duration = time.convertToSeconds(years=0, months=0, days=0, hours=9, minutes=0, seconds=0)
 end_time = start_time+duration # s
 dt = 1 # s
@@ -19,10 +19,6 @@ dt = 1 # s
 alt = 423*1000 # m
 sat1_kep = np.array([main_body.radius+alt, 0.0003, 51.6, 30, 270, 0])
 sat1_eciStateInit = OEConvert.keplerian_to_state_vec(sat1_kep, main_body.mu)
-
-if(sat1_eciStateInit is None):
-    print("Invalid keplerian elements")
-    exit()
 
 sat1_area = np.array([np.pi*2**2, 5*4, 5*4])
 sat1_mass = 9616 # kg

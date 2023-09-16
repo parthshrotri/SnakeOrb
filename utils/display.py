@@ -21,14 +21,14 @@ def show_central_body(fig, central_body):
     x = central_body.radius * np.outer(np.cos(theta), np.sin(phi))
     y = central_body.radius * np.outer(np.sin(theta), np.sin(phi))
     z = central_body.radius * np.outer(np.ones(np.size(theta)), np.cos(phi))
-    fig.add_trace(go.Surface(x=x, y=y, z=z, opacity=0.3, colorscale= central_body.colors, showscale=False))
+    fig.add_trace(go.Surface(x=x, y=y, z=z, opacity=1.0, colorscale= central_body.colors, showscale=False))
 
 def BCI(t_array, trajs, names, colorscales, central_body):
     fig = go.Figure();  
     show_central_body(fig, central_body)
     for i in range(len(trajs)):
         fig.add_trace(go.Scatter3d(x=trajs[names[i]]["state_x_eci"], y=trajs[names[i]]["state_y_eci"], z=trajs[names[i]]["state_z_eci"], mode="lines",
-                                   line=dict(color=t_array, colorscale=colorscales[i]), name=names[i]))
+                                   line=dict(width=4, color=t_array, colorscale=colorscales[i]), name=names[i]))
     fig.update_layout(
         title="ECI Trajectory",
         scene = dict(
@@ -51,7 +51,7 @@ def ECEF(t_array, trajs, names, colorscales, central_body):
     show_central_body(fig, central_body)
     for i in range(len(trajs)):
         fig.add_trace(go.Scatter3d(x=trajs[names[i]]["state_x_ecef"], y=trajs[names[i]]["state_y_ecef"], z=trajs[names[i]]["state_z_ecef"], mode="lines",
-                                   line=dict(color=t_array, colorscale=colorscales[i]), name=names[i]))
+                                   line=dict(width=4, color=t_array, colorscale=colorscales[i]), name=names[i]))
     fig.update_layout(
         title="ECEF Trajectory",
         scene = dict(

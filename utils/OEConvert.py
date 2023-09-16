@@ -23,7 +23,7 @@ def keplerian_to_state_vec(kep, mu):
         print("WARNING: Keplerian elements do not match")
         disp.kep_elem("Input", input)
         disp.kep_elem("Output", check)
-        return 
+        exit(1)
 
 def semimajor_axis(state, mu):
     r = np.linalg.norm(state[0:3])
@@ -64,6 +64,8 @@ def node_vector(state):
 def RAAN(state):
     node = node_vector(state)
     node_mag = np.sqrt(np.dot(node, node))
+    if node_mag == 0:
+        return 0
     omega = np.arccos(np.dot(node, np.array([1, 0, 0])) / node_mag)
     if np.dot(node, np.array([0, 1, 0])) < 0:
         omega = 2*np.pi - omega
