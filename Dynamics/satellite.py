@@ -1,16 +1,13 @@
 import utils.convert as convert
+import utils.quaternion as quat
 class Satellite:
-    def __init__(self, name, state, rot_state, omega, cd, area, mass):
+    def __init__(self, name, state, omega, cd, area, mass):
         self.name = name
         self.state = state
-        self.qEci2Body = rot_state
+        self.qEci2Body = quat.init_quat(state, "lvlh")
         self.omega = omega
-        self.cd_x = cd[0]
-        self.cd_y = cd[1]
-        self.cd_z = cd[2]
-        self.area_x = area[0]
-        self.area_y = area[1]
-        self.area_z = area[2]
+        self.cd = cd
+        self.area = area
         self.mass = mass
         self.crashed = False
         self.history = {"time":[],

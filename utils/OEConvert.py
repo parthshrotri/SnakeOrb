@@ -1,5 +1,5 @@
 import numpy as np
-# import display as disp
+import utils.display as disp
 
 def state_vec_to_keplerian(state, mu):
     a = semimajor_axis(state, mu)
@@ -14,7 +14,16 @@ def keplerian_to_state_vec(kep, mu):
     pos = position(kep, mu)
     vel = velocity(kep, mu)
 
-    return np.array([pos[0], pos[1], pos[2], vel[0], vel[1], vel[2]])
+    state_vec = np.array([pos[0], pos[1], pos[2], vel[0], vel[1], vel[2]])
+    input = kepDeg2Rad(kep)
+    check = state_vec_to_keplerian(state_vec, mu)
+    if np.allclose(input, check, rtol=1e-04, atol=1e-05):
+        return state_vec
+    else:
+        print("WARNING: Keplerian elements do not match")
+        disp.kep_elem("Input", input)
+        disp.kep_elem("Output", check)
+        return 
 
 def semimajor_axis(state, mu):
     r = np.linalg.norm(state[0:3])
@@ -74,15 +83,18 @@ def argument_of_periapse(state, mu):
 
 def true_anomaly(state, mu):
     r = state[0:3]
-    v = state[3:6]
     e = eccentricity(state, mu)
     r_mag = np.sqrt(np.dot(r, r))
     e_mag = np.sqrt(np.dot(e, e))
     if r_mag == 0 or e_mag == 0:
         return 0
+    if np.isclose(np.dot(e, r)/(e_mag*r_mag), 1):
+        return 0
     f = np.arccos(np.dot(e, r)/(e_mag*r_mag))
-    if (np.dot(r, v) < 0):
-        f = 2*np.pi - f
+    while f >= 2*np.pi:
+        f -= 2*np.pi
+    while f <= -2*np.pi:
+        f += 2*np.pi
     return f
 
 def position(kep, mu):
@@ -111,16 +123,21 @@ def velocity(kep, mu):
     theta = omega + f
 
     h = np.sqrt(mu*a*(1-e**2))
-    vel = -mu/h*np.array([-(np.cos(raan)*(np.sin(theta) + e*np.sin(omega)) + np.sin(raan)*(np.cos(theta) + e*np.cos(omega))*np.cos(i)),
+    vel = mu/h*np.array([-(np.cos(raan)*(np.sin(theta) + e*np.sin(omega)) + np.sin(raan)*(np.cos(theta) + e*np.cos(omega))*np.cos(i)),
                           -(np.sin(raan)*(np.sin(theta) + e*np.sin(omega)) + np.cos(raan)*(np.cos(theta) + e*np.cos(omega))*np.cos(i)),
                           (np.cos(theta) + e*np.cos(omega))*np.sin(i)])
                          
     return vel
 
-# kep_elem_print = np.array([8000*1000, 0.125, np.radians(45), np.radians(90), np.radians(270), np.radians(5)])
+def kepRad2Deg(kep):
+    return np.array([kep[0], kep[1], np.degrees(kep[2]), np.degrees(kep[3]), np.degrees(kep[4]), np.degrees(kep[5])])
+
+def kepDeg2Rad(kep):
+    return np.array([kep[0], kep[1], np.radians(kep[2]), np.radians(kep[3]), np.radians(kep[4]), np.radians(kep[5])])   
+
 # kep_elem = np.array([8000*1000, 0.125, 45, 90, 270, 5])
 # state_vec = keplerian_to_state_vec(kep_elem, 3.986004418*10**14)
 # kep_elem_check = state_vec_to_keplerian(state_vec, 3.986004418*10**14)
-# disp.kep_elem("Initial",kep_elem_print)
+# disp.kep_elem("Initial",kepDeg2Rad(kep_elem))
 # disp.state_vec("State Vec",state_vec/1000)
 # disp.kep_elem("Check",kep_elem_check)
