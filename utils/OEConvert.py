@@ -15,6 +15,7 @@ def keplerian_to_state_vec(kep, mu):
     vel = velocity(kep, mu)
 
     state_vec = np.array([pos[0], pos[1], pos[2], vel[0], vel[1], vel[2]])
+    disp.state_vec("State Vec", state_vec)
     input = kepDeg2Rad(kep)
     check = state_vec_to_keplerian(state_vec, mu)
     if np.allclose(input, check, rtol=1e-04, atol=1e-05):
@@ -60,7 +61,6 @@ def node_vector(state):
     n = np.cross(np.array([0, 0, 1]), h)
     return n
 
-
 def RAAN(state):
     node = node_vector(state)
     node_mag = np.sqrt(np.dot(node, node))
@@ -99,6 +99,9 @@ def true_anomaly(state, mu):
         f += 2*np.pi
     return f
 
+def angular_momentum_from_OE(a, e, mu):
+    return np.sqrt(mu*a*(1-e**2))
+
 def position(kep, mu):
     a = kep[0]
     e = kep[1]
@@ -117,29 +120,23 @@ def position(kep, mu):
 def velocity(kep, mu):
     a = kep[0]
     e = kep[1]
-    i = np.radians(kep[2])
+    inc = np.radians(kep[2])
     raan = np.radians(kep[3])
     omega = np.radians(kep[4])
     f = np.radians(kep[5])
 
     theta = omega + f
 
-    h = np.sqrt(mu*a*(1-e**2))
-    vel = mu/h*np.array([-(np.cos(raan)*(np.sin(theta) + e*np.sin(omega)) + np.sin(raan)*(np.cos(theta) + e*np.cos(omega))*np.cos(i)),
-                          -(np.sin(raan)*(np.sin(theta) + e*np.sin(omega)) + np.cos(raan)*(np.cos(theta) + e*np.cos(omega))*np.cos(i)),
-                          (np.cos(theta) + e*np.cos(omega))*np.sin(i)])
+    h = angular_momentum_from_OE(a, e, mu)
+    theta = omega + f
+    vel_vec = mu/h*np.array([-(np.cos(raan)*(np.sin(theta) + e*np.sin(omega)) + np.sin(raan)*(np.cos(theta)+ e*np.cos(omega))*np.cos(inc)),
+                             -(np.sin(raan)*(np.sin(theta) + e*np.sin(omega)) - np.cos(raan)*(np.cos(theta) + e*np.cos(omega))*np.cos(inc)),
+                             (np.cos(theta) + e*np.cos(omega))*np.sin(inc)])
                          
-    return vel
+    return vel_vec
 
 def kepRad2Deg(kep):
     return np.array([kep[0], kep[1], np.degrees(kep[2]), np.degrees(kep[3]), np.degrees(kep[4]), np.degrees(kep[5])])
 
 def kepDeg2Rad(kep):
     return np.array([kep[0], kep[1], np.radians(kep[2]), np.radians(kep[3]), np.radians(kep[4]), np.radians(kep[5])])   
-
-# kep_elem = np.array([8000*1000, 0.125, 45, 90, 270, 5])
-# state_vec = keplerian_to_state_vec(kep_elem, 3.986004418*10**14)
-# kep_elem_check = state_vec_to_keplerian(state_vec, 3.986004418*10**14)
-# disp.kep_elem("Initial",kepDeg2Rad(kep_elem))
-# disp.state_vec("State Vec",state_vec/1000)
-# disp.kep_elem("Check",kep_elem_check)

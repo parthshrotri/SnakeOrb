@@ -86,4 +86,3 @@ def ground_track(t_array, trajs, names, colorscales, central_body):
         )
     )
     fig.show()
-

@@ -1,7 +1,7 @@
 import numpy as np
+import spiceypy as spice
 
 import Core.simulator as sim
-import Dynamics.dynamics as dyn
 import Dynamics.body as body
 import Dynamics.satellite as satellite
 import utils.OEConvert as OEConvert
@@ -11,14 +11,16 @@ import utils.time as time
 main_body = body.central_body("Earth")
 
 start_time = time.convertCalendarToJ2000(2002, 7, 16, 0, 1, 0, 0, -7)
-duration = time.convertToSeconds(years=0, months=0, days=0, hours=9, minutes=0, seconds=0)
+duration = time.convertToSeconds(years=0, months=0, days=1, hours=0, minutes=10, seconds=0)
 end_time = start_time+duration # s
-dt = 1 # s
+dt = 60 # s
 
 # Dragon
-alt = 423*1000 # m
-sat1_kep = np.array([main_body.radius+alt, 0.0003, 51.6, 30, 270, 0])
+sat1_kep = np.array([26600*1000, 0.737, 63.4, 90, 270, 3])
 sat1_eciStateInit = OEConvert.keplerian_to_state_vec(sat1_kep, main_body.mu)
+state_spice= spice.oscelt(sat1_eciStateInit, start_time, main_body.mu)
+print(state_spice)
+print(sat1_kep)
 
 sat1_area = np.array([np.pi*2**2, 5*4, 5*4])
 sat1_mass = 9616 # kg

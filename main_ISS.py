@@ -1,7 +1,6 @@
 import numpy as np
 
 import Core.simulator as sim
-import Dynamics.dynamics as dyn
 import Dynamics.body as body
 import Dynamics.satellite as satellite
 import utils.OEConvert as OEConvert
@@ -12,7 +11,7 @@ import utils.quaternion as quat
 main_body = body.central_body("Earth")
 
 start_time = time.convertDaysToSec(0) # s
-duration = time.convertToSeconds(years=0, months=0, days=1, hours=0, minutes=200, seconds=0) # s
+duration = time.convertToSeconds(years=0, months=0, days=1, hours=0, minutes=93, seconds=0) # s
 end_time = start_time+duration # ss
 dt = 60 # s
 

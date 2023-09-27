@@ -1,7 +1,6 @@
 import numpy as np
 
 import Core.simulator as sim
-import Dynamics.dynamics as dyn
 import Dynamics.body as body
 import Dynamics.satellite as satellite
 import utils.OEConvert as OEConvert

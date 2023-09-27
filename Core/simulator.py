@@ -29,7 +29,7 @@ class Simulator():
             newStateMag = np.linalg.norm(new_state[0:3])
             if newStateMag <= self.central_body.radius:
                 if not sat.is_crashed():
-                    print(f"{sat.get_name()} reentered {self.central_body.name}'s atmosphere")
+                    print(f"{sat.get_name()} impacted {self.central_body.name}")
                 sat.set_crashed()
             if self.central_body.name == "Earth":
                 ecef_state = convert.eci2ecef(new_state, time.convertSecToDays(self.time_since_j2000))
