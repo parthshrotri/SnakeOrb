@@ -1,5 +1,4 @@
 import numpy as np
-import spiceypy as spice
 
 import Core.simulator as sim
 import Dynamics.body as body
@@ -18,9 +17,6 @@ dt = 60 # s
 # Dragon
 sat1_kep = np.array([26600*1000, 0.737, 63.4, 90, 270, 3])
 sat1_eciStateInit = OEConvert.keplerian_to_state_vec(sat1_kep, main_body.mu)
-state_spice= spice.oscelt(sat1_eciStateInit, start_time, main_body.mu)
-print(state_spice)
-print(sat1_kep)
 
 sat1_area = np.array([np.pi*2**2, 5*4, 5*4])
 sat1_mass = 9616 # kg
