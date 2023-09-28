@@ -100,7 +100,11 @@ def true_anomaly(state, mu):
     return f
 
 def angular_momentum_from_OE(a, e, mu):
-    return np.sqrt(mu*a*(1-e**2))
+    if e >=0 and e < 1:
+        return np.sqrt(mu*a*(1-e**2))
+    elif e < 0:
+        return np.sqrt(mu*a*(e**2-1))
+
 
 def position(kep, mu):
     a = kep[0]
