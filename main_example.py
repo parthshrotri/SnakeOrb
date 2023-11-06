@@ -1,19 +1,20 @@
 import numpy as np
+from astropy.time import Time
 
 import Core.simulator as sim
-import Dynamics.body as body
 import Dynamics.satellite as satellite
 import utils.OEConvert as OEConvert
 import utils.display as disp
-import utils.time as time
-import utils.quaternion as quat
+import utils.convert as convert
 
-main_body = body.central_body("Earth")
+start_time = Time("2020-01-01T00:00:00", format='isot', scale='utc').jd # s
+duration = convert.convertToSeconds(years=0, months=0, days=1, hours=0, minutes=0, seconds=0)
+end_time = start_time+convert.convertSecToDays(duration) # s
+dt = 1 # s
 
-start_time = time.convertDaysToSec(2460170.5) # s
-duration = time.convertToSeconds(years=0, months=0, days=1, hours=0, minutes=0, seconds=0)
-end_time = start_time + duration # s
-dt = 60 # s
+def_bodies = ["Earth", "Sun"]
+bodies, horizons_dt = sim.Simulator.init_bodies(def_bodies, start_time, end_time, dt)
+SnakeOrb = sim.Simulator(bodies, start_time, end_time, dt, horizons_dt)
 
 # Hubble
 sat1_eciStateInit = 1000 * np.array([ 3.082461354447172E+03, -2.886974162019587E+03, -5.328634038549732E+03,  5.517292527064879E+00,  5.292343106730224E+00,  3.261779963465199E-01]) 
@@ -35,7 +36,6 @@ sat4_eciStateInit = 1000 * np.array([1.721649642391115E+04, -3.849194159448530E+
 sat1_area = np.array([5.6, 3.5, 3.0])
 sat1_mass = 4725 # kg
 
-sat1_qEci2Body = quat.init_quat(sat1_eciStateInit, "lvlh")
 sat1_omega = np.array([0, 0, 0])
 sat1_cd = 2.2
 
@@ -43,25 +43,24 @@ sat1 = satellite.Satellite("Hubble", sat1_eciStateInit, sat1_omega, sat1_cd, sat
 sat2 = satellite.Satellite("TDRS-C", sat2_eciStateInit, sat1_omega, sat1_cd, sat1_area, sat1_mass)
 sat3 = satellite.Satellite("NAVSTAR 68", sat3_eciStateInit, sat1_omega, sat1_cd, sat1_area, sat1_mass)
 sat4 = satellite.Satellite("IntelSat 901", sat4_eciStateInit, sat1_omega, sat1_cd, sat1_area, sat1_mass)
-
-t_array = np.arange(start_time, end_time, dt)
-SnakeOrb = sim.Simulator(main_body, t_array, [sat1, sat2, sat3, sat4])
+SnakeOrb.add_spacecrafts([sat1, sat2, sat3, sat4])
 
 trajs = SnakeOrb.run()
 
-colorscales = ['Purp_r', 'Reds_r', 'Magenta_r', 'Blues_r']
+colorscales = ['Purp', 'Reds', 'Magenta', 'Blues']
 names = [sat1.get_name(), sat2.get_name(), sat3.get_name(), sat4.get_name()]
 
-disp.BCI(t_array, trajs, names, colorscales, central_body=main_body)
-disp.ECEF(t_array, trajs, names, colorscales, central_body=main_body)
-disp.ground_track(t_array, trajs, names, colorscales, central_body=main_body)
+disp.solar_system(SnakeOrb.t_array, trajs, names, colorscales, bodies, show_sun=False)
+disp.BCI(SnakeOrb.t_array, trajs, names, colorscales, bodies)
+disp.ECEF(SnakeOrb.t_array, trajs, names, colorscales, bodies)
+disp.ground_track(SnakeOrb.t_array, trajs, names, colorscales, bodies)
 
 disp.state_vec(sat1.get_name(), sat1.get_state())
 disp.state_vec(sat2.get_name(), sat2.get_state())
 disp.state_vec(sat3.get_name(), sat3.get_state())
 disp.state_vec(sat4.get_name(), sat4.get_state())
 
-disp.kep_elem(sat1.get_name(), OEConvert.state_vec_to_keplerian(sat1.get_state(), main_body.mu))
-disp.kep_elem(sat2.get_name(), OEConvert.state_vec_to_keplerian(sat2.get_state(), main_body.mu))
-disp.kep_elem(sat3.get_name(), OEConvert.state_vec_to_keplerian(sat3.get_state(), main_body.mu))
-disp.kep_elem(sat4.get_name(), OEConvert.state_vec_to_keplerian(sat4.get_state(), main_body.mu))
+disp.kep_elem(sat1.get_name(), OEConvert.state_vec_to_keplerian(sat1.get_state(), bodies[0].mu))
+disp.kep_elem(sat2.get_name(), OEConvert.state_vec_to_keplerian(sat2.get_state(), bodies[0].mu))
+disp.kep_elem(sat3.get_name(), OEConvert.state_vec_to_keplerian(sat3.get_state(), bodies[0].mu))
+disp.kep_elem(sat4.get_name(), OEConvert.state_vec_to_keplerian(sat4.get_state(), bodies[0].mu))

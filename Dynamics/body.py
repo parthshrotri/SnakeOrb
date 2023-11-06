@@ -1,9 +1,15 @@
-class central_body:
-    def __init__(self, name):
-        if ((name != "Earth") and (name != "Venus") and (name != "Mars") and (name != "Pluto")):
+import numpy as np
+import scipy.integrate as int
+
+class Body:
+    def __init__(self, name, states, warn=False):
+        if (((name != "Earth") and (name != "Venus") and (name != "Mars") and (name != "Pluto")) and warn):
             print(f"Warning: Atmosphere not supported for {name}")
             if name != "Earth":
                 print(f"Warning: {name} centered {name} fixed frame not supported")
+        self.states = states
+        self.curr_idx = 0
+        self.state = self.states[:,self.curr_idx]
         if name == "Earth":
             self.name = name
             self.radius = 6378.1e3
@@ -79,4 +85,25 @@ class central_body:
             self.scaleHeight = 50e3
             self.colors = [[0, 'rgb(255,241,213)'], [1, 'rgb(204,186,153)']]
         else:
-            print("Central Body not supported")
+            print("Body not supported")
+
+    def update_state(self, bodies, dt, curr_true):
+        if curr_true:
+            self.curr_idx += 1
+            self.state = self.states[:,self.curr_idx]
+        else:
+            self.state = solve_n_body(self, bodies, dt)
+
+def orbit_ode(state, t, self, bodies):
+    ax, ay, az = 0, 0, 0
+    for body in bodies:
+        if body != self:
+            rel_state = state - body.state
+            r = np.linalg.norm(rel_state[0:3])
+            ax += -body.mu*rel_state[0]/r**3
+            ay += -body.mu*rel_state[1]/r**3
+            az += -body.mu*rel_state[2]/r**3
+    return np.array([state[3], state[4], state[5], ax, ay, az])
+
+def solve_n_body(self, bodies, dt):
+    return int.odeint(orbit_ode, self.state, [0,dt], args = (self, bodies),rtol=1e-13, atol=1e-13)[1]

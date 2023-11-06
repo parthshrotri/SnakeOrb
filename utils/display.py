@@ -1,6 +1,8 @@
 import numpy as np
 import plotly.graph_objects as go
 
+import utils.convert as convert
+
 def state_vec(name, state, sigfigs=6):
     print(f"{name} State Vector:")
     print(f"R: [{state[0]:.{sigfigs}}, {state[1]:.{sigfigs}}, {state[2]:.{sigfigs}}] m")
@@ -15,26 +17,35 @@ def kep_elem(name, kep, sigfigs=6):
     print(f"Argument of Periapse (𝜔): {np.degrees(kep[4]):.{sigfigs}}º")
     print(f"True Anomaly (f): {np.degrees(kep[5]):.{sigfigs}}º\n")
 
-def show_central_body(fig, central_body):
+def show_body(fig, body, pos=np.array([0,0,0])):
     theta = np.linspace(0, 2.*np.pi, 100)
     phi = np.linspace(0, np.pi, 100)
-    x = central_body.radius * np.outer(np.cos(theta), np.sin(phi))
-    y = central_body.radius * np.outer(np.sin(theta), np.sin(phi))
-    z = central_body.radius * np.outer(np.ones(np.size(theta)), np.cos(phi))
-    fig.add_trace(go.Surface(x=x, y=y, z=z, opacity=1.0, colorscale= central_body.colors, showscale=False))
+    x = body.radius/1000 * np.outer(np.cos(theta), np.sin(phi)) + pos[0]
+    y = body.radius/1000 * np.outer(np.sin(theta), np.sin(phi)) + pos[1]
+    z = body.radius/1000 * np.outer(np.ones(np.size(theta)), np.cos(phi)) + pos[2]
+    fig.add_trace(go.Surface(x=x, y=y, z=z, opacity=1.0, colorscale=body.colors, showscale=False))
 
-def BCI(t_array, trajs, names, colorscales, central_body):
+def solar_system(t_array, trajs, names, colorscales, bodies, show_sun=True):
     fig = go.Figure();  
-    show_central_body(fig, central_body)
+    for i in range(len(bodies)):
+        if show_sun or bodies[i].name != "Sun":
+            x_au = np.array(convert.meters_to_AU(bodies[i].states[0,:]))
+            y_au = np.array(convert.meters_to_AU(bodies[i].states[1,:]))
+            z_au = np.array(convert.meters_to_AU(bodies[i].states[2,:]))
+            fig.add_trace(go.Scatter3d(x=x_au, y=y_au, z=z_au, mode="lines",
+                                    line=dict(width=4, color=t_array)))
     for i in range(len(trajs)):
-        fig.add_trace(go.Scatter3d(x=trajs[names[i]]["state_x_eci"], y=trajs[names[i]]["state_y_eci"], z=trajs[names[i]]["state_z_eci"], mode="lines",
+        x_au = np.array(convert.km_to_AU(np.array(trajs[names[i]]["state_x"])))
+        y_au = np.array(convert.km_to_AU(np.array(trajs[names[i]]["state_y"])))
+        z_au = np.array(convert.km_to_AU(np.array(trajs[names[i]]["state_z"])))
+        fig.add_trace(go.Scatter3d(x=x_au, y=y_au, z=z_au, mode="lines",
                                    line=dict(width=4, color=t_array, colorscale=colorscales[i]), name=names[i]))
     fig.update_layout(
-        title="ECI Trajectory",
+        title="Solar System",
         scene = dict(
-            xaxis_title='X [m]',
-            yaxis_title='Y [m]',
-            zaxis_title='Z [m]'),
+            xaxis_title='X [AU]',
+            yaxis_title='Y [AU]',
+            zaxis_title='Z [AU]'),
         font=dict(
             family="Courier New, monospace",
             size=18,
@@ -43,21 +54,42 @@ def BCI(t_array, trajs, names, colorscales, central_body):
     )
     fig.show()
 
-def ECEF(t_array, trajs, names, colorscales, central_body):
-    if central_body.name != "Earth":
-        print(f"{central_body.name} Centered {central_body.name} Fixed Trajectories not supported yet")
+
+def BCI(t_array, trajs, names, colorscales, bodies):
+    fig = go.Figure();  
+    show_body(fig, bodies[0])
+    for i in range(len(trajs)):
+        fig.add_trace(go.Scatter3d(x=trajs[names[i]]["state_x_bci"], y=trajs[names[i]]["state_y_bci"], z=trajs[names[i]]["state_z_bci"], mode="lines",
+                                   line=dict(width=4, color=t_array, colorscale=colorscales[i]), name=names[i]))
+    fig.update_layout(
+        title="ECI Trajectory",
+        scene = dict(
+            xaxis_title='X [km]',
+            yaxis_title='Y [km]',
+            zaxis_title='Z [km]'),
+        font=dict(
+            family="Courier New, monospace",
+            size=18,
+            color="RebeccaPurple"
+        )
+    )
+    fig.show()
+
+def ECEF(t_array, trajs, names, colorscales, bodies):
+    if bodies[0].name != "Earth":
+        print(f"{bodies[0].name} Centered {bodies[0].name} Fixed Trajectories not supported yet")
         return
     fig = go.Figure();  
-    show_central_body(fig, central_body)
+    show_body(fig, bodies[0])
     for i in range(len(trajs)):
         fig.add_trace(go.Scatter3d(x=trajs[names[i]]["state_x_ecef"], y=trajs[names[i]]["state_y_ecef"], z=trajs[names[i]]["state_z_ecef"], mode="lines",
                                    line=dict(width=4, color=t_array, colorscale=colorscales[i]), name=names[i]))
     fig.update_layout(
         title="ECEF Trajectory",
         scene = dict(
-            xaxis_title='X [m]',
-            yaxis_title='Y [m]',
-            zaxis_title='Z [m]'),
+            xaxis_title='X [km]',
+            yaxis_title='Y [km]',
+            zaxis_title='Z [km]'),
         font=dict(
             family="Courier New, monospace",
             size=18,
@@ -66,11 +98,11 @@ def ECEF(t_array, trajs, names, colorscales, central_body):
     )
     fig.show()
 
-def ground_track(t_array, trajs, names, colorscales, central_body):
-    if central_body.name == "Earth":
+def ground_track(t_array, trajs, names, colorscales, bodies):
+    if bodies[0].name == "Earth":
         coastline = np.loadtxt("GroundMaps/Earth.txt")
     else:
-        print("Ground Track Not Supported for {central_body.name}}")
+        print(f"Ground Track Not Supported for {bodies[0].name}")
         return
     fig = go.Figure();  
     fig.add_trace(go.Scatter(x=coastline[:,0], y=coastline[:,1], mode="lines", line=dict(color='rgb(52, 165, 111)'), name=""))

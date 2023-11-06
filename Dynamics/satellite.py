@@ -4,6 +4,7 @@ class Satellite:
     def __init__(self, name, state, omega, cd, area, mass):
         self.name = name
         self.state = state
+        self.ecef_crash = None
         self.qEci2Body = quat.init_quat(state, "lvlh")
         self.omega = omega
         self.cd = cd
@@ -11,12 +12,12 @@ class Satellite:
         self.mass = mass
         self.crashed = False
         self.history = {"time":[],
-                        "state_x_eci":[],
-                        "state_y_eci":[],
-                        "state_z_eci":[],
-                        "state_vx_eci":[],
-                        "state_vy_eci":[],
-                        "state_vz_eci":[],
+                        "state_x":[],
+                        "state_y":[],
+                        "state_z":[],
+                        "state_vx":[],
+                        "state_vy":[],
+                        "state_vz":[],
                         "qEciToBody_q1":[],
                         "qEciToBody_q2":[],
                         "qEciToBody_q3":[],
@@ -24,6 +25,12 @@ class Satellite:
                         "omega_x":[],
                         "omega_y":[],
                         "omega_z":[],
+                        "state_x_bci":[],
+                        "state_y_bci":[],
+                        "state_z_bci":[],
+                        "state_vx_bci":[],
+                        "state_vy_bci":[],
+                        "state_vz_bci":[],
                         "state_x_ecef":[],
                         "state_y_ecef":[],
                         "state_z_ecef":[],
@@ -33,16 +40,16 @@ class Satellite:
                         "state_lat":[],
                         "state_lon":[]}
 
-    def update_state(self, time, new_state, new_qEci2Body, new_state_ecef, new_state_ll):
+    def update_state(self, time, new_state, new_qEci2Body, new_state_bci, new_state_ecef, new_state_ll):
         self.state = new_state
         self.qEci2Body = new_qEci2Body
         self.history["time"].append(time)
-        self.history["state_x_eci"].append(new_state[0])
-        self.history["state_y_eci"].append(new_state[1])
-        self.history["state_z_eci"].append(new_state[2])
-        self.history["state_vx_eci"].append(new_state[3])
-        self.history["state_vy_eci"].append(new_state[4])
-        self.history["state_vz_eci"].append(new_state[5])
+        self.history["state_x"].append(self.state[0]/1000)
+        self.history["state_y"].append(self.state[1]/1000)
+        self.history["state_z"].append(self.state[2]/1000)
+        self.history["state_vx"].append(self.state[3]/1000)
+        self.history["state_vy"].append(self.state[4]/1000)
+        self.history["state_vz"].append(self.state[5]/1000)
         self.history["qEciToBody_q1"].append(self.qEci2Body[0])
         self.history["qEciToBody_q2"].append(self.qEci2Body[1])
         self.history["qEciToBody_q3"].append(self.qEci2Body[2])
@@ -50,12 +57,18 @@ class Satellite:
         self.history["omega_x"].append(self.omega[0])
         self.history["omega_y"].append(self.omega[1])
         self.history["omega_z"].append(self.omega[2])
-        self.history["state_x_ecef"].append(new_state_ecef[0])
-        self.history["state_y_ecef"].append(new_state_ecef[1])
-        self.history["state_z_ecef"].append(new_state_ecef[2])
-        self.history["state_vx_ecef"].append(new_state_ecef[3])
-        self.history["state_vy_ecef"].append(new_state_ecef[4])
-        self.history["state_vz_ecef"].append(new_state_ecef[5])
+        self.history["state_x_bci"].append(new_state_bci[0]/1000)
+        self.history["state_y_bci"].append(new_state_bci[1]/1000)
+        self.history["state_z_bci"].append(new_state_bci[2]/1000)
+        self.history["state_vx_bci"].append(new_state_bci[3]/1000)
+        self.history["state_vy_bci"].append(new_state_bci[4]/1000)
+        self.history["state_vz_bci"].append(new_state_bci[5]/1000)
+        self.history["state_x_ecef"].append(new_state_ecef[0]/1000)
+        self.history["state_y_ecef"].append(new_state_ecef[1]/1000)
+        self.history["state_z_ecef"].append(new_state_ecef[2]/1000)
+        self.history["state_vx_ecef"].append(new_state_ecef[3]/1000)
+        self.history["state_vy_ecef"].append(new_state_ecef[4]/1000)
+        self.history["state_vz_ecef"].append(new_state_ecef[5]/1000)
         self.history["state_lat"].append(new_state_ll[0])
         self.history["state_lon"].append(new_state_ll[1])
 
@@ -74,8 +87,13 @@ class Satellite:
     def get_history(self):
         return self.history
     
-    def set_crashed(self):
+    def set_ecef_static(self, state, time):
+        self.ecef_crash = convert.eci2ecef(state, time)
+    
+    def set_crashed(self, earth, time=0):
         self.crashed = True
+        if earth:
+            self.set_ecef_static(self.state, time)
     
     def is_crashed(self):
         return self.crashed
