@@ -92,7 +92,7 @@ class Body:
             self.curr_idx += 1
             self.state = self.states[:,self.curr_idx]
         else:
-            self.state = solve_n_body(self, bodies, dt)
+            self.state = int.odeint(orbit_ode, self.state, [0,dt], args = (self, bodies),rtol=1e-13, atol=1e-13)[1]
 
 def orbit_ode(state, t, self, bodies):
     ax, ay, az = 0, 0, 0
@@ -104,6 +104,3 @@ def orbit_ode(state, t, self, bodies):
             ay += -body.mu*rel_state[1]/r**3
             az += -body.mu*rel_state[2]/r**3
     return np.array([state[3], state[4], state[5], ax, ay, az])
-
-def solve_n_body(self, bodies, dt):
-    return int.odeint(orbit_ode, self.state, [0,dt], args = (self, bodies),rtol=1e-13, atol=1e-13)[1]

@@ -28,7 +28,7 @@ def orbit_prop(sat, dt, bodies):
     omega = get_omega(sat, dt)
     state = int.odeint(orbit_ode, sat.state, [0,dt], args = (sat, bodies),rtol=1e-13, atol=1e-13)
     qEci2Body = quat.qprop(sat.qEci2Body, omega, dt)
-    qEci2Body = quat.init_quat(state[1], "lvlh")
+    qEci2Body = quat.init_quat(state[1]-bodies[0].state, "lvlh")
     return state[1], qEci2Body
 
 def J2_accel(rel_state, body):

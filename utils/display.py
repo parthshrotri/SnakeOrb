@@ -25,7 +25,7 @@ def show_body(fig, body, pos=np.array([0,0,0])):
     z = body.radius/1000 * np.outer(np.ones(np.size(theta)), np.cos(phi)) + pos[2]
     fig.add_trace(go.Surface(x=x, y=y, z=z, opacity=1.0, colorscale=body.colors, showscale=False))
 
-def solar_system(t_array, trajs, names, colorscales, bodies, show_sun=True):
+def solar_system(t_array, spacecraft, bodies, show_sun=True):
     fig = go.Figure();  
     for i in range(len(bodies)):
         if show_sun or bodies[i].name != "Sun":
@@ -34,12 +34,12 @@ def solar_system(t_array, trajs, names, colorscales, bodies, show_sun=True):
             z_au = np.array(convert.meters_to_AU(bodies[i].states[2,:]))
             fig.add_trace(go.Scatter3d(x=x_au, y=y_au, z=z_au, mode="lines",
                                     line=dict(width=4, color=t_array)))
-    for i in range(len(trajs)):
-        x_au = np.array(convert.km_to_AU(np.array(trajs[names[i]]["state_x"])))
-        y_au = np.array(convert.km_to_AU(np.array(trajs[names[i]]["state_y"])))
-        z_au = np.array(convert.km_to_AU(np.array(trajs[names[i]]["state_z"])))
+    for sc in spacecraft:
+        x_au = np.array(convert.km_to_AU(np.array(sc.history["state_x"])))
+        y_au = np.array(convert.km_to_AU(np.array(sc.history["state_y"])))
+        z_au = np.array(convert.km_to_AU(np.array(sc.history["state_z"])))
         fig.add_trace(go.Scatter3d(x=x_au, y=y_au, z=z_au, mode="lines",
-                                   line=dict(width=4, color=t_array, colorscale=colorscales[i]), name=names[i]))
+                                   line=dict(width=4, color=t_array, colorscale=sc.colorscale), name=sc.name))
     fig.update_layout(
         title="Solar System",
         scene = dict(
@@ -55,12 +55,12 @@ def solar_system(t_array, trajs, names, colorscales, bodies, show_sun=True):
     fig.show()
 
 
-def BCI(t_array, trajs, names, colorscales, bodies):
+def BCI(t_array, spacecraft, bodies):
     fig = go.Figure();  
     show_body(fig, bodies[0])
-    for i in range(len(trajs)):
-        fig.add_trace(go.Scatter3d(x=trajs[names[i]]["state_x_bci"], y=trajs[names[i]]["state_y_bci"], z=trajs[names[i]]["state_z_bci"], mode="lines",
-                                   line=dict(width=4, color=t_array, colorscale=colorscales[i]), name=names[i]))
+    for sc in spacecraft:
+        fig.add_trace(go.Scatter3d(x=sc.history["state_x_bci"], y=sc.history["state_y_bci"], z=sc.history["state_z_bci"], mode="lines",
+                                   line=dict(width=4, color=t_array, colorscale=sc.colorscale), name=sc.name))
     fig.update_layout(
         title="ECI Trajectory",
         scene = dict(
@@ -75,15 +75,15 @@ def BCI(t_array, trajs, names, colorscales, bodies):
     )
     fig.show()
 
-def ECEF(t_array, trajs, names, colorscales, bodies):
+def ECEF(t_array, spacecraft, bodies):
     if bodies[0].name != "Earth":
         print(f"{bodies[0].name} Centered {bodies[0].name} Fixed Trajectories not supported yet")
         return
     fig = go.Figure();  
     show_body(fig, bodies[0])
-    for i in range(len(trajs)):
-        fig.add_trace(go.Scatter3d(x=trajs[names[i]]["state_x_ecef"], y=trajs[names[i]]["state_y_ecef"], z=trajs[names[i]]["state_z_ecef"], mode="lines",
-                                   line=dict(width=4, color=t_array, colorscale=colorscales[i]), name=names[i]))
+    for sc in spacecraft:
+        fig.add_trace(go.Scatter3d(x=sc.history["state_x_ecef"], y=sc.history["state_y_ecef"], z=sc.history["state_z_ecef"], mode="lines",
+                                   line=dict(width=4, color=t_array, colorscale=sc.colorscale), name=sc.name))
     fig.update_layout(
         title="ECEF Trajectory",
         scene = dict(
@@ -98,7 +98,7 @@ def ECEF(t_array, trajs, names, colorscales, bodies):
     )
     fig.show()
 
-def ground_track(t_array, trajs, names, colorscales, bodies):
+def ground_track(t_array, spacecraft, bodies):
     if bodies[0].name == "Earth":
         coastline = np.loadtxt("GroundMaps/Earth.txt")
     else:
@@ -106,9 +106,9 @@ def ground_track(t_array, trajs, names, colorscales, bodies):
         return
     fig = go.Figure();  
     fig.add_trace(go.Scatter(x=coastline[:,0], y=coastline[:,1], mode="lines", line=dict(color='rgb(52, 165, 111)'), name=""))
-    for i in range(len(trajs)):
-        fig.add_trace(go.Scatter(x=trajs[names[i]]["state_lon"], y=trajs[names[i]]["state_lat"], mode="markers", 
-                                 marker=dict(size=4, color=t_array, colorscale=colorscales[i], opacity=1), name=names[i]))
+    for sc in spacecraft:
+        fig.add_trace(go.Scatter(x=sc.history["state_lon"], y=sc.history["state_lat"], mode="markers", 
+                                 marker=dict(size=4, color=t_array, colorscale=sc.colorscale), name=sc.name))
     fig.update_layout(
     title="Ground Track",
     font=dict(

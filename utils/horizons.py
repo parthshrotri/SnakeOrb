@@ -34,8 +34,6 @@ def get_state_from_horizons(body, start_time, end_time, dt):
         body == "899"
     elif body == "Pluto":
         body = "999"
-    else: 
-        print(f"{body} not supported")
     
     obj = Horizons(id=body, location='@0', epochs={'start':start_time, 'stop':end_time, 'step':horizons_dt_str})
     vecs = obj.vectors()
