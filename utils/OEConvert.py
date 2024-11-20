@@ -15,7 +15,7 @@ def keplerian_to_state_vec(kep, mu):
     vel = velocity(kep, mu)
 
     state_vec = np.array([pos[0], pos[1], pos[2], vel[0], vel[1], vel[2]])
-    disp.state_vec("State Vec", state_vec)
+    disp.state_vec("Converted", state_vec)
     input = kepDeg2Rad(kep)
     check = state_vec_to_keplerian(state_vec, mu)
     if np.allclose(input, check, rtol=1e-04, atol=1e-05):
@@ -24,7 +24,8 @@ def keplerian_to_state_vec(kep, mu):
         print("WARNING: Keplerian elements do not match")
         disp.kep_elem("Input", input)
         disp.kep_elem("Output", check)
-        exit(1)
+        return state_vec
+        # exit(1)
 
 def semimajor_axis(state, mu):
     r = np.linalg.norm(state[0:3])

@@ -35,7 +35,16 @@ def ecef2lla(ecefState):
         Lon = Lon + 2*np.pi
 
     Lat = np.arcsin(ecefState[2]/np.linalg.norm(ecefState))
-    return np.array([np.degrees(Lat), np.degrees(Lon), np.linalg.norm(ecefState[0:2])])
+    return np.array([np.degrees(Lat), np.degrees(Lon), np.linalg.norm(ecefState[0:2]) - 6378.1e3])
+
+def lla2ecef(llaState):
+    lat = np.radians(llaState[0])
+    lon = np.radians(llaState[1])
+    r = llaState[2] + 6378.1e3
+    x = r * np.sin(lat) * np.cos(lon)
+    y = r * np.sin(lat) * np.sin(lon)
+    z = r * np.cos(lat)
+    return np.array([x, y, z])
 
 def AU_to_meters(AU):
     return AU*149597870700

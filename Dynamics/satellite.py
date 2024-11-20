@@ -1,7 +1,7 @@
 import utils.convert as convert
 import utils.quaternion as quat
 class Satellite:
-    def __init__(self, name, state, omega, area, mass, colorscale, cd=2.2):
+    def __init__(self, name, state, omega, area, mass, solar_array_area ,colorscale, cd=2.2):
         self.name = name
         self.state = state
         self.ecef_crash = None
@@ -9,6 +9,7 @@ class Satellite:
         self.omega = omega
         self.area = area
         self.mass = mass
+        self.solar_array_area = solar_array_area
         self.colorscale = colorscale
         self.cd = cd
         self.crashed = False
@@ -39,9 +40,11 @@ class Satellite:
                         "state_vy_ecef":[],
                         "state_vz_ecef":[],
                         "state_lat":[],
-                        "state_lon":[]}
+                        "state_lon":[],
+                        "illumination":[],
+                        "power_avail":[]}
 
-    def update_state(self, time, new_state, new_qEci2Body, new_state_bci, new_state_ecef, new_state_ll):
+    def update_state(self, time, new_state, new_qEci2Body, new_state_bci, new_state_ecef, new_state_ll, new_state_illumination, new_power):
         self.state = new_state
         self.qEci2Body = new_qEci2Body
         self.history["time"].append(time)
@@ -72,6 +75,8 @@ class Satellite:
         self.history["state_vz_ecef"].append(new_state_ecef[5]/1000)
         self.history["state_lat"].append(new_state_ll[0])
         self.history["state_lon"].append(new_state_ll[1])
+        self.history["illumination"].append(new_state_illumination)
+        self.history["power_avail"].append(new_power)
 
     def get_state(self):
         return self.state

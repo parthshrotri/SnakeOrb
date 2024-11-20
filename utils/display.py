@@ -117,4 +117,22 @@ def ground_track(t_array, spacecraft, bodies):
         color="RebeccaPurple"
         )
     )
+    fig.update_xaxes(range = [-180,180])
+    fig.update_yaxes(range = [-90,90])
+    fig.show()
+
+def power_avail(t_array, spacecraft):
+    fig = go.Figure();  
+    for sc in spacecraft:
+        fig.add_trace(go.Scatter(x=(t_array - t_array[0])*(24*60), y=np.array(sc.history["power_avail"])/1000, mode="lines", 
+                                 marker=dict(size=4, color=t_array, colorscale=sc.colorscale), name=sc.name))
+    fig.update_layout(
+        title="Power Available",
+        xaxis_title='Time [min]',
+        yaxis_title='Power [kW]',
+        font=dict(
+            family="Courier New, monospace",
+            size=18,
+            color="RebeccaPurple"
+        ))
     fig.show()

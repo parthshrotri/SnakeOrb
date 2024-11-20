@@ -39,6 +39,59 @@ def J2_accel(rel_state, body):
     Jz = J2*rel_state[2]/r**7 * (3*rel_state[2]**2 - 9/2*(rel_state[0]**2 + rel_state[1]**2))
     return np.array([Jx, Jy, Jz])
 
+def area_occulting(r, R, d):
+    area_occ = r**2*np.arccos((d**2 + r**2 - R**2)/(2*d*r)) + R**2*np.arccos((d**2 + R**2 - r**2)/(2*d*R)) -\
+                    0.5*np.sqrt((-d+r+R)*(d+r-R)*(d-r+R)*(d+r+R))
+    return area_occ
+
+def light_frac(sc_pos, body_radius, sun_pos, body_pos):
+    sun_radius = 696265000
+    s = sun_pos - body_pos
+    s_hat = s / np.linalg.norm(s)
+    x_u = sun_radius/(sun_radius - body_radius) * -s 
+    alpha_u = np.arcsin(sun_radius/np.linalg.norm(x_u))
+    x_p = body_radius / (sun_radius + body_radius) * s + body_pos
+    alpha_p = np.arcsin(sun_radius / np.linalg.norm(x_p))
+    r_sc_sun = sun_pos - sc_pos
+    r_body_sc = body_pos - sc_pos
+    if np.linalg.norm(sc_pos) > np.linalg.norm(body_pos) and np.linalg.norm(r_sc_sun) > np.linalg.norm(r_body_sc):
+        if np.arccos((np.dot((sc_pos - x_u), s_hat) / np.linalg.norm(sc_pos - x_u))) <  alpha_u:
+            return 0
+        elif np.arccos((np.dot((sc_pos - x_p), -s_hat) / np.linalg.norm(sc_pos - x_p))) <  alpha_p:
+            a_sr = np.arcsin(sun_radius/np.linalg.norm(r_sc_sun))
+            a_br = np.arcsin(body_radius/np.linalg.norm(r_body_sc))
+            a_d = np.abs(np.arccos(np.dot(r_body_sc, r_sc_sun)/(np.linalg.norm(r_body_sc)*np.linalg.norm(r_sc_sun))))
+            if a_sr > a_br:
+                if np.abs(a_sr - a_d) >= a_br:
+                    area_frac = 1 - (a_br**2)/(a_sr**2)
+                else:
+                    area_occ = area_occulting(a_br, a_sr, a_d)
+                    area_frac = (np.pi*a_sr**2 - area_occ) / (np.pi*a_sr**2)
+                return area_frac
+            else:
+                if a_br - a_sr > a_d :
+                    return 0
+                elif a_d - a_br > a_sr:
+                    return 1
+                else:
+                    area_occ = area_occulting(a_sr, a_br, a_d)
+                    area_frac = (np.pi*a_sr**2 - area_occ) / (np.pi*a_sr**2)
+                    return area_frac
+        else:
+            return 1
+    else:
+        return 1
+
+def total_illumination(state, bodies):
+    light_fracs = np.zeros(len(bodies))
+    for i in range(len(bodies)):
+        body = bodies[i]
+        if body.name != "Sun":
+            light_fracs[i] = light_frac(state[0:3], body.radius, bodies[1].state[0:3], body.state[0:3]) 
+        else:
+            light_fracs[i] = 1       
+    return min(light_fracs)
+    
 def orbit_ode(state, t, sat, bodies):
     ax, ay, az = 0, 0, 0
     for body in bodies:
