@@ -1,7 +1,8 @@
 import numpy as np
 import plotly.graph_objects as go
-
+import scipy.ndimage as scimg
 import utils.convert as convert
+import Dynamics.dynamics as dyn
 
 def state_vec(name, state, sigfigs=6):
     print(f"{name} State Vector:")
@@ -104,7 +105,17 @@ def ground_track(t_array, spacecraft, bodies):
     else:
         print(f"Ground Track Not Supported for {bodies[0].name}")
         return
+    
+    latitudes = np.linspace(-89.99, 89.99, 360)
+    longitudes = np.linspace(-179.99, 179.99, 360)
+    illumination = np.zeros((len(latitudes), len(longitudes)))
+    for i in range(len(latitudes)):
+        for j in range(len(longitudes)):
+            eci_state = convert.ecef2eci(np.concatenate((convert.lla2ecef(np.array([latitudes[i], longitudes[j], 11000])), np.array([0,0,0]))), convert.convertSecToDays(t_array[-1]))
+            illumination[i,j] = dyn.total_illumination(convert.eci2icrs(eci_state, bodies[0].state), bodies)
+    illumination = scimg.filters.gaussian_filter(illumination, sigma=1)
     fig = go.Figure();  
+    fig.add_trace(go.Contour(z=illumination, line_smoothing=1.3, showscale=False, x=longitudes, y=latitudes, colorscale='Greys'))
     fig.add_trace(go.Scatter(x=coastline[:,0], y=coastline[:,1], mode="lines", line=dict(color='rgb(52, 165, 111)'), name=""))
     for sc in spacecraft:
         fig.add_trace(go.Scatter(x=sc.history["state_lon"], y=sc.history["state_lat"], mode="markers", 

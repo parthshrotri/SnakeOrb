@@ -54,12 +54,12 @@ class Simulator():
             
             if not sat.is_crashed():
                 new_state, new_qEci2Body = dyn.orbit_prop(sat, dt, self.bodies)
-                bci_state = new_state - self.bodies[0].state
+                bci_state = convert.icrs2eci(new_state, self.bodies[0].state)
             else:
                 if sat.ecef_crash is not None:
                     ecef_state = sat.ecef_crash  
                     new_state = self.bodies[self.idx_earth].state + convert.ecef2eci(ecef_state, convert.convertSecToDays(self.time_since_j2000))
-                    bci_state = new_state - self.bodies[0].state
+                    bci_state = convert.icrs2eci(new_state, self.bodies[0].state)
                     new_qEci2Body = quat.init_quat(bci_state, "lvlh")
             
             for body in self.bodies:

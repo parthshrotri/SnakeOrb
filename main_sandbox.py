@@ -18,7 +18,7 @@ SnakeOrb = sim.Simulator(bodies, start_time, end_time, dt, horizons_dt)
 
 # Dragon
 sat1_kep = np.array([26600*1000, 0.737, 63.4, 90, 270, 3])
-sat1_stateInit = OEConvert.keplerian_to_state_vec(sat1_kep, bodies[0].mu)+bodies[0].state
+sat1_stateInit = convert.eci2icrs(OEConvert.keplerian_to_state_vec(sat1_kep, bodies[0].mu), bodies[0].state)
 sat1_area = np.array([np.pi*2**2, 5*4, 5*4])
 sat1_mass = 9616 # kg
 sat1_omega = np.array([0, 0, 0])

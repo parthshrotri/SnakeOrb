@@ -1,4 +1,24 @@
 import numpy as np
+def icrs2eci(icrsState, earth_state):
+    axial_tilt = np.radians(-23.44)
+    icrsState = icrsState - earth_state
+    dcm = np.array([[1, 0, 0],
+                    [0, np.cos(axial_tilt), np.sin(axial_tilt)],
+                    [0, -np.sin(axial_tilt), np.cos(axial_tilt)]])
+    eciState = np.zeros(icrsState.shape)
+    eciState[0:3] = np.matmul(dcm, icrsState[0:3].T).T
+    eciState[3:6] = np.matmul(dcm, icrsState[3:6].T).T
+    return eciState
+
+def eci2icrs(eciState, earth_state):
+    axial_tilt = np.radians(-23.44)
+    dcm = np.array([[1, 0, 0],
+                    [0, np.cos(axial_tilt), -np.sin(axial_tilt)],
+                    [0, np.sin(axial_tilt), np.cos(axial_tilt)]])
+    icrsState = np.zeros(eciState.shape)
+    icrsState[0:3] = np.matmul(dcm, eciState[0:3].T).T
+    icrsState[3:6] = np.matmul(dcm, eciState[3:6].T).T
+    return icrsState + earth_state
 
 def eci2ecef(eciState, days_since_j2000):
     gamma = np.radians(360.9856123035484*days_since_j2000 + 280.46)
@@ -38,7 +58,7 @@ def ecef2lla(ecefState):
     return np.array([np.degrees(Lat), np.degrees(Lon), np.linalg.norm(ecefState[0:2]) - 6378.1e3])
 
 def lla2ecef(llaState):
-    lat = np.radians(llaState[0])
+    lat = np.radians(llaState[0]+90)
     lon = np.radians(llaState[1])
     r = llaState[2] + 6378.1e3
     x = r * np.sin(lat) * np.cos(lon)
