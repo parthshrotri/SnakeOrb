@@ -1,6 +1,6 @@
 import numpy as np
 import plotly.graph_objects as go
-import scipy.ndimage as scimg
+import matplotlib.pyplot as plt
 import utils.convert as convert
 import Dynamics.dynamics as dyn
 
@@ -107,15 +107,19 @@ def ground_track(t_array, spacecraft, bodies):
         return
     
     latitudes = np.linspace(-89.99, 89.99, 360)
-    longitudes = np.linspace(-179.99, 179.99, 360)
+    longitudes = np.linspace(-179.99, 179.99, 720)
     illumination = np.zeros((len(latitudes), len(longitudes)))
+    time = t_array[-1]
+    z3 = np.zeros(3)
+    earth_state = bodies[0].state
     for i in range(len(latitudes)):
         for j in range(len(longitudes)):
-            eci_state = convert.ecef2eci(np.concatenate((convert.lla2ecef(np.array([latitudes[i], longitudes[j], 11000])), np.array([0,0,0]))), convert.convertSecToDays(t_array[-1]))
-            illumination[i,j] = dyn.total_illumination(convert.eci2icrs(eci_state, bodies[0].state), bodies)
-    illumination = scimg.filters.gaussian_filter(illumination, sigma=1)
+            eci_state = convert.ecef2eci(np.concatenate((convert.lla2ecef(np.array([latitudes[i], longitudes[j], 11000])), z3)), time)
+            illumination[i,j] = dyn.total_illumination(convert.eci2icrs(eci_state, earth_state), bodies)
+
     fig = go.Figure();  
-    fig.add_trace(go.Contour(z=illumination, line_smoothing=1.3, showscale=False, x=longitudes, y=latitudes, colorscale='Greys'))
+    fig.add_trace(go.Contour(z=illumination, line_smoothing=0, showscale=False, x=longitudes, y=latitudes, colorscale='gray', contours_coloring='heatmap', line=dict(width=0),
+                             contours=dict(start=.01, end=1.0, size=0.1)))
     fig.add_trace(go.Scatter(x=coastline[:,0], y=coastline[:,1], mode="lines", line=dict(color='rgb(52, 165, 111)'), name=""))
     for sc in spacecraft:
         fig.add_trace(go.Scatter(x=sc.history["state_lon"], y=sc.history["state_lat"], mode="markers", 

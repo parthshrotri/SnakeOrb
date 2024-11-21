@@ -1,6 +1,6 @@
 import numpy as np
 def icrs2eci(icrsState, earth_state):
-    axial_tilt = np.radians(-23.44)
+    axial_tilt = np.radians(23.44)
     icrsState = icrsState - earth_state
     dcm = np.array([[1, 0, 0],
                     [0, np.cos(axial_tilt), np.sin(axial_tilt)],
@@ -11,7 +11,7 @@ def icrs2eci(icrsState, earth_state):
     return eciState
 
 def eci2icrs(eciState, earth_state):
-    axial_tilt = np.radians(-23.44)
+    axial_tilt = np.radians(23.44)
     dcm = np.array([[1, 0, 0],
                     [0, np.cos(axial_tilt), -np.sin(axial_tilt)],
                     [0, np.sin(axial_tilt), np.cos(axial_tilt)]])
@@ -32,7 +32,7 @@ def eci2ecef(eciState, days_since_j2000):
     return ecefState
 
 def ecef2eci(ecefState, days_since_j2000):
-    gamma = -np.radians(360.9856123035484*days_since_j2000 + 280.46)
+    gamma = np.radians(360.9856123035484*days_since_j2000 + 280.46)
     dcm = np.array([[np.cos(gamma), -np.sin(gamma), 0],
                     [np.sin(gamma), np.cos(gamma), 0],
                     [0, 0, 1]])
